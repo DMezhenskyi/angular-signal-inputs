@@ -1,4 +1,4 @@
-import { Component, Input, computed, signal } from '@angular/core';
+import { Component, computed, effect, input, signal } from '@angular/core';
 import { User, ModifiedUser } from './models';
 
 @Component({
@@ -8,17 +8,28 @@ import { User, ModifiedUser } from './models';
     <input (input)="updateQuery($event)" placeholder="Start typing..." />
     <ul>
       @for (user of filteredUsers(); track user.id) {
-        <li>{{ user.name }} {{ user.lastName }}</li>
+        <li>{{ user.displayName }}</li>
       }
     </ul>
   `,
 })
 export class UserListComponent {
-  @Input() users: User[] = [];
+
+  userList = input.required({
+    alias: 'users',
+    transform: concatUserNames
+  });
+
+  constructor() {
+    effect(() => {
+      // the way we track changes in signals
+      console.log('New Input value is: ', this.userList());
+    })
+  }
 
   protected filteredUsers = computed(() =>
-    this.users.filter(({ name }) =>
-      name.startsWith(this.query())
+    this.userList().filter(({ displayName }) =>
+      displayName.startsWith(this.query())
     )
   );
 
